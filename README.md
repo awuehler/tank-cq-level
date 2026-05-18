@@ -1,4 +1,4 @@
-## Statement Of Work
+## Statement Of Work [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/awuehler/tank-cq-level)
 The primary goal for this project is to build a low cost solution to monitor a stand-alone AC chiller with an isolated condensation tank (i.e. no drain access). The tank requires manual dumping every 24 to 48 hours depending on seasonal temperature or humidity.
 
 Automating the water purge from the AC catch basin is based on an optical sensor used to identify water level. When a full tank is detected, that event is used to send a signal to a smart PDU. The PDU outlet used for the water pump is turned ON/OFF triggered by the optical sensor event.
