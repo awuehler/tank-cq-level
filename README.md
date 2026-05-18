@@ -47,7 +47,7 @@ Initial check using GPT-5 to assist with the conversion of the sample C program 
 
  - See: [cqrobot.c](https://github.com/awuehler/tank-cq-level/blob/main/0.0/cqrobot.c)
 
-The resulting output in Python was mostly correct, except for using the wrong GPIO pin (for Raspberry Pi it is pin 17). The corrected working version is available for reference:
+The resulting output in Python was mostly correct, except for using the wrong GPIO pin (for Raspberry Pi it is pin 18). The corrected working version is available for reference:
 
  - See: [cqrobot.py](https://github.com/awuehler/tank-cq-level/blob/main/0.0/cqrobot.py)
 
