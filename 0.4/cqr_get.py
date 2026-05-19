@@ -39,7 +39,7 @@ import ast, subprocess, sys, time
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
-from cqr_pdu import run_curl, pdu_curl, pdu_url
+from cqr_pdu import pdu_url
 
 # Define mode to use GPIO pin via BCM pin numbering.
 GPIO.setmode(GPIO.BCM)
