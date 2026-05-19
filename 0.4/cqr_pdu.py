@@ -233,9 +233,7 @@ class PDUManager:
         else:
             raise ValueError("Invalid protocol. Must be 'HTTP' or 'SSH'...")
 
-
-
-        # Execute subprocess.run to invoke system call for curl.
+        # Execute subprocess.run to invoke system call for SSH.
         try:
             result = subprocess.run(
                 args,
@@ -248,7 +246,7 @@ class PDUManager:
             return result.stdout.strip()
             
         except subprocess.CalledProcessError as e:
-            print(f"Curl command failed with exit code {e.returncode}")
+            print(f"SSH command failed with exit code {e.returncode}")
             print(f"Error output: {e.stderr}")
             return None
 
@@ -258,4 +256,4 @@ _pdu_instance = PDUManager()
 # Bind each instance method to a module-level variable.
 run_curl = _pdu_instance.run_curl
 pdu_curl = _pdu_instance.pdu_curl
-pdu_curl = _pdu_instance.pdu_url
+pdu_url = _pdu_instance.pdu_url
