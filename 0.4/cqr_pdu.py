@@ -204,27 +204,27 @@ class PDUManager:
             if action.lower() == "false":
                 HTTP_METHOD = "PUT"
                 PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
-                PDU_TARGET  = f"https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
+                PDU_TARGET  = f"'https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/'"
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
-                PDU_REMOTE  = "curl -s -k --digest -u f"{PDU_DIGEST}" -H "Accept: application/json" --digest f"{PDU_TARGET}""
+                PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -H Accept: application/json --digest {PDU_TARGET}"
                 args = [
                     'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
             elif action.lower() == "true":
                 HTTP_METHOD = "PUT"
                 PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
-                PDU_TARGET  = f"https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
+                PDU_TARGET  = f"'https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/'"
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
-                PDU_REMOTE  = "curl -s -k --digest -u f"{PDU_DIGEST}" -H "Accept: application/json" --digest f"{PDU_TARGET}""
+                PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -H Accept: application/json --digest {PDU_TARGET}"
                 args = [
                     'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
             elif action.lower() == "get":
                 HTTP_METHOD = "POST"
                 PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
-                PDU_TARGET  = f"https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/"
+                PDU_TARGET  = f"'https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/'"
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
-                PDU_REMOTE  = "curl -s -k --digest -u f"{PDU_DIGEST}" -H "Accept: application/json" --digest f"{PDU_TARGET}""
+                PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -H Accept: application/json --digest {PDU_TARGET}"
                 args = [
                     'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
