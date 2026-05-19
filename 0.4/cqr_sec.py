@@ -36,7 +36,7 @@ from datetime import datetime
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
-from cqr_pdu import pdu_curl
+from cqr_pdu import pdu_curl, pdu_url
 
 def simple_timer(count):
 
@@ -51,7 +51,8 @@ def simple_timer(count):
         count -= 1
 
     # Turn off PDU outlet.
-    OFF_OUTLET = pdu_curl(vendor={cqr_env.PDUS_SMARTLY[0]}, outlet={cqr_env.PDUS_SMARTLY[4]}, action="FALSE")
+    #OFF_OUTLET = pdu_curl(vendor={cqr_env.PDUS_SMARTLY[0]}, outlet={cqr_env.PDUS_SMARTLY[4]}, action="FALSE")
+    OFF_OUTLET = pdu_url(protocol="SSH", outlet={cqr_env.PDUS_SMARTLY[4]}, action="FALSE")
 
 if __name__ == "__main__":
     # Accept a count down integer from command line arguments.

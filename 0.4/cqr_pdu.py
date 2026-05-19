@@ -150,9 +150,112 @@ class PDUManager:
             print(f"Error output: {e.stderr}")
             return None
 
+    # Vendor specific PDU API calls.
+    def pdu_url(self, protocol: str, outlet: str, action: str):
+        '''
+        Executes a curl command for PDU based on vendor, outlet, and action.
+        
+        Args:
+            protocol (str): HTTP/S or SSH.
+            outlet (str): The specific outlet identifier.
+            action (str): 'set' (triggers PUT) or 'get' (triggers POST).
+        '''
+
+        if protocol.lower() == "HTTP":
+            # Determine the HTTP method based on the input action.
+            if action.lower() == "false":
+                HTTP_METHOD = "PUT"
+                PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
+                PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
+                args = [
+                    'curl', '--silent', '-k', 
+                    '--digest', '--user', f"{PDU_DIGEST}", 
+                    '-X', HTTP_METHOD, 
+                    '-H', 'X-CSRF: x', 
+                    '--data', 'value=false', f"{PDU_TARGET}"
+                ]
+            elif action.lower() == "true":
+                HTTP_METHOD = "PUT"
+                PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
+                PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
+                args = [
+                    'curl', '--silent', '-k', 
+                    '--digest', '--user', f"{PDU_DIGEST}", 
+                    '-X', HTTP_METHOD, 
+                    '-H', 'X-CSRF: x', 
+                    '--data', 'value=true', f"{PDU_TARGET}"
+                ]
+            elif action.lower() == "get":
+                HTTP_METHOD = "POST"
+                PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/"
+                PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
+                args = [
+                    'curl', '--silent', '-k', 
+                    '--digest', '--user', f"{PDU_DIGEST}", 
+                    "-H 'Accept: application/json'", 
+                    '--digest', f"{PDU_TARGET}"
+                ]
+            else:
+                raise ValueError("Invalid action. Must be 'true' or 'false' or 'get'...")
+
+        elif protocol.lower() == "SSH":
+            # Determine the remote SSH command (HTTP method) based on the input action.
+            # NOTE: Requires Public Key installed on smart PDU.
+            if action.lower() == "false":
+                HTTP_METHOD = "PUT"
+                PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
+                PDU_TARGET  = f"'https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/'"
+                PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
+                PDU_REMOTE  = "curl -s -k --digest -u f"{PDU_DIGEST}" -H "Accept: application/json" --digest f"{PDU_TARGET}""
+                args = [
+                    'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
+                ]
+            elif action.lower() == "true":
+                HTTP_METHOD = "PUT"
+                PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
+                PDU_TARGET  = f"'https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/'"
+                PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
+                PDU_REMOTE  = "curl -s -k --digest -u f"{PDU_DIGEST}" -H "Accept: application/json" --digest f"{PDU_TARGET}""
+                args = [
+                    'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
+                ]
+            elif action.lower() == "get":
+                HTTP_METHOD = "POST"
+                PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
+                PDU_TARGET  = f"'https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/'"
+                PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
+                PDU_REMOTE  = "curl -s -k --digest -u f"{PDU_DIGEST}" -H "Accept: application/json" --digest f"{PDU_TARGET}""
+                args = [
+                    'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
+                ]
+            else:
+                raise ValueError("Invalid action. Must be 'true' or 'false' or 'get'...")
+        else:
+            raise ValueError("Invalid protocol. Must be 'HTTP' or 'SSH'...")
+
+
+
+        # Execute subprocess.run to invoke system call for curl.
+        try:
+            result = subprocess.run(
+                args,
+                capture_output=True, # Captures stdout and stderr
+                text=True,           # Returns output as strings instead of bytes
+                check=True           # Raises CalledProcessError if the command fails
+            )
+            
+            # Return the standard output.
+            return result.stdout.strip()
+            
+        except subprocess.CalledProcessError as e:
+            print(f"Curl command failed with exit code {e.returncode}")
+            print(f"Error output: {e.stderr}")
+            return None
+
 # Create a hidden instance of the PDU class.
 _pdu_instance = PDUManager()
 
 # Bind each instance method to a module-level variable.
 run_curl = _pdu_instance.run_curl
 pdu_curl = _pdu_instance.pdu_curl
+pdu_curl = _pdu_instance.pdu_url
