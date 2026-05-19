@@ -46,6 +46,7 @@ Dependencies
 
 Improvements
     - Support +2 Smart PDU vendors
+    - Clean-up support for both HTTP (i.e. curl) and SSH protocol access
     - ...
 '''
 

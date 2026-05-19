@@ -25,6 +25,9 @@ Improvements
     - Redirect from standard out to logfile
     - Exceptions handling and a priori state change awareness
     - ENV heartbeats & restarts: SYS, WiFi, PDU, DNS, etc.
+    - Add additional try statements for each curl or ssh subprocess call
+    - Clean-up code in support of protocol options
+    - Update configuration to set default protocol
     - ...
 '''
 

@@ -144,9 +144,16 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
   Confirm the service status for PDU Manager and monitor the journal for sensor reports
 
     - e.g. sudo systemctl status pdu-manager.service
-    - e.g. sudo journalctl -f
+    - e.g. sudo journalctl -f -u pdu-manager.service
 
 ## Addendum
 
 Additional information inserted as needed.
+
+Use of SSH protocol for remote command access requires the use of a public key. The SSH_ASKPASS environment variable is not an easy nor reliable approach to enable password-less ssh access to remote PDU.
+
+  - For the Digital Web Logger PDU, login -> admin -> Setup -> General Network Settings -> Allowed SSH public keys
+
+Follow-up detail for Digital Web Logger PDU, remote API control is only available through its admin account.
+
 ...
