@@ -66,7 +66,7 @@ def main():
                     PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
                     #PDU_RETURN  = run_curl(["curl", "--silent", "-k", "--digest", "--user", f"{PDU_DIGEST}", "-H 'Accept: application/json'", "--digest", f"{PDU_TARGET}"])
                     PDU_RETURN  = pdu_url(protocol="SSH", outlet={cqr_env.PDUS_SMARTLY[4]}, action="GET")
-                    print(f"{cqr_env.PDUS_SMARTLY[0]}:", f"{PDU_RETURN} (outlet power state)")
+                    print(f"{cqr_env.PDUS_SMARTLY[0]}:", f"{PDU_RETURN} (outlet power state)", flush=True)
 
             elif CQR_VALUE == 1:
                 # Do something.
@@ -81,7 +81,7 @@ def main():
                     PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/"
                     #PDU_RETURN  = run_curl(["curl", "--silent", "-k", "--digest", "--user", f"{PDU_DIGEST}", "-H 'Accept: application/json'", "--digest", f"{PDU_TARGET}"])
                     PDU_RETURN  = pdu_url(protocol="SSH", outlet={cqr_env.PDUS_SMARTLY[4]}, action="GET")
-                    print(f"{cqr_env.PDUS_SMARTLY[0]}:", f"{PDU_RETURN} (outlet power state)")
+                    print(f"{cqr_env.PDUS_SMARTLY[0]}:", f"{PDU_RETURN} (outlet power state)", flush=True)
 
                 # TODO: Convert the CompletedProcess object from subprocess.run to string
                 # TODO: Add condition check for previously running sub process(es)
