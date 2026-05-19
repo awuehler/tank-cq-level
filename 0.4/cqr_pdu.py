@@ -161,7 +161,7 @@ class PDUManager:
             action (str): 'set' (triggers PUT) or 'get' (triggers POST).
         '''
 
-        if protocol.lower() == "HTTP":
+        if protocol.lower() == "http":
             # Determine the HTTP method based on the input action.
             if action.lower() == "false":
                 HTTP_METHOD = "PUT"
@@ -197,7 +197,7 @@ class PDUManager:
                 ]
             else:
                 raise ValueError("Invalid action. Must be 'true' or 'false' or 'get'...")
-        elif protocol.lower() == "SSH":
+        elif protocol.lower() == "ssh":
             # Determine the remote SSH command (HTTP method) based on the input action.
             # NOTE: Requires Public Key installed on smart PDU.
             if action.lower() == "false":
@@ -255,4 +255,4 @@ _pdu_instance = PDUManager()
 # Bind each instance method to a module-level variable.
 run_curl = _pdu_instance.run_curl
 pdu_curl = _pdu_instance.pdu_curl
-pdu_url = _pdu_instance.pdu_url
+pdu_url  = _pdu_instance.pdu_url
