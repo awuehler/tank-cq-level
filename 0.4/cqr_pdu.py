@@ -205,7 +205,7 @@ class PDUManager:
                 PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
                 PDU_TARGET  = f"https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
-                PDU_REMOTE  = f"'curl -s -k --digest -u {PDU_DIGEST} -X, {HTTP_METHOD}, -H 'X-CSRF: x' --data value=false {PDU_TARGET}'"
+                PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -X {HTTP_METHOD} -H 'X-CSRF: x' --data value=false {PDU_TARGET}"
                 args = [
                     'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
@@ -214,7 +214,7 @@ class PDUManager:
                 PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
                 PDU_TARGET  = f"https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
-                PDU_REMOTE  = f"'curl -s -k --digest -u {PDU_DIGEST} -X, {HTTP_METHOD}, -H 'X-CSRF: x' --data value=true {PDU_TARGET}'"
+                PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -X {HTTP_METHOD} -H 'X-CSRF: x' --data value=true {PDU_TARGET}"
                 args = [
                     'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
@@ -223,7 +223,7 @@ class PDUManager:
                 PDU_PUBLIC  = f"{cqr_env.PDUS_SMARTLY[2]}@{cqr_env.PDUS_SMARTLY[1]}"
                 PDU_TARGET  = f"https://localhost/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/"
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
-                PDU_REMOTE  = f"'curl -s -k --digest -u {PDU_DIGEST} -H Accept: application/json --digest {PDU_TARGET}'"
+                PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -H Accept: application/json --digest {PDU_TARGET}"
                 args = [
                     'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
