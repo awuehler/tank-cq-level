@@ -197,7 +197,6 @@ class PDUManager:
                 ]
             else:
                 raise ValueError("Invalid action. Must be 'true' or 'false' or 'get'...")
-
         elif protocol.lower() == "SSH":
             # Determine the remote SSH command (HTTP method) based on the input action.
             # NOTE: Requires Public Key installed on smart PDU.
