@@ -104,7 +104,7 @@ class PDUManager:
             PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
             PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
             args = [
-                'curl', '--silent', '-k', 
+                'curl', '--silent', '-k',
                 '--digest', '--user', f"{PDU_DIGEST}", 
                 '-X', HTTP_METHOD, 
                 '-H', 'X-CSRF: x', 
@@ -115,7 +115,7 @@ class PDUManager:
             PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/state/"
             PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
             args = [
-                'curl', '--silent', '-k', 
+                'curl', '--silent', '-k',
                 '--digest', '--user', f"{PDU_DIGEST}", 
                 '-X', HTTP_METHOD, 
                 '-H', 'X-CSRF: x', 
@@ -126,7 +126,7 @@ class PDUManager:
             PDU_TARGET  = f"https://{cqr_env.PDUS_SMARTLY[1]}/restapi/relay/outlets/{cqr_env.PDUS_SMARTLY[4]}/=name,physical_state/"
             PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
             args = [
-                'curl', '--silent', '-k', 
+                'curl', '--silent', '-k',
                 '--digest', '--user', f"{PDU_DIGEST}", 
                 "-H 'Accept: application/json'", 
                 '--digest', f"{PDU_TARGET}"
@@ -208,7 +208,8 @@ class PDUManager:
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
                 PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -X {HTTP_METHOD} -H 'X-CSRF: x' --data value=false {PDU_TARGET}"
                 args = [
-                    'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new',
+                    f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
             elif action.lower() == "true":
                 HTTP_METHOD = "PUT"
@@ -217,7 +218,8 @@ class PDUManager:
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
                 PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -X {HTTP_METHOD} -H 'X-CSRF: x' --data value=true {PDU_TARGET}"
                 args = [
-                    'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new',
+                    f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
             elif action.lower() == "get":
                 HTTP_METHOD = "POST"
@@ -226,7 +228,8 @@ class PDUManager:
                 PDU_DIGEST  = f"{cqr_env.PDUS_SMARTLY[2]}:{cqr_env.PDUS_SMARTLY[3]}"
                 PDU_REMOTE  = f"curl -s -k --digest -u {PDU_DIGEST} -H Accept: application/json --digest {PDU_TARGET}"
                 args = [
-                    'ssh', f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
+                    'ssh', '-o', 'StrictHostKeyChecking=accept-new',
+                    f"{PDU_PUBLIC}", f"{PDU_REMOTE}"
                 ]
             else:
                 raise ValueError("Invalid action. Must be 'true' or 'false' or 'get'...")

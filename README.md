@@ -17,25 +17,26 @@ The end to end summary is about purging the water from a catch basin (AC condens
   - Pi Zero Case Kit Compatible Pin Header
   - Micro USB Cable Power Supply 5.25 Volts 3 Amps for Raspberry Pi Zero Board
   - Additional attachments (as needed) for USB, and/or HDMI devices
-  - Aproximate cost: $20 US (varies)
+  - Approximate cost: $20 US (varies)
 
 - CQRobot Contact Water/Liquid Level Sensor (or equivalent)
   - Microcontroller board plus sensor probe
     - Wiki: [SKU: CQRSENYW002](http://www.cqrobot.wiki/index.php/Contact_Water/Liquid_Level_Sensor_SKU:_CQRSENYW002)
-  - Aproximate cost: $15 US (varies)
+      - See "Prepare for RaspberryPi" section for system package install
+  - Approximate cost: $15 US (varies)
 
 - ECO-WORTHY RV Fresh Water Pump 12V DC 3.5GPM 45PSI Self Priming (or equivalent)
   - 12V 5A 60W LED Power Supply, AC 100-240V to DC 12 Volt Transformer, Power Adapter
     - available through amazon, ebay, or related online retailers
-  - Aproximate cost: $60 US (varies)
+  - Approximate cost: $60 US (varies)
 
 - Digital Web Loggers Smart PDU (or equivalent)
   - Must support remote outlet ON/OFF cycling via Telnet, SSH, or HTTP/S
     - See: https://www.digital-loggers.com/restapi.pdf
-  - Aproximate cost: $300 US (varies)
+  - Approximate cost: $300 US (varies)
 
 - Additional items include: tubing, one-way inline check valve, water proofing materials, ...
-  - Aproximate cost: $50 US (varies)
+  - Approximate cost: $50 US (varies)
 
 ## Version: 0.0
 
@@ -102,7 +103,7 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
 ```
   [Unit]
   Description=PDU Manager Python Service
-  # Ensures the network is up before starting this script (required by embedded curl commands).
+  # Ensures the network is up before starting this script (for script curl commands).
   After=network.target
 
   [Service]
@@ -123,7 +124,7 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
   # Wait 11 seconds before restarting
   RestartSec=11
 
-  # Capture standard output/error to the systemd journal (captures your print() statements).
+  # Capture standard output/error to the systemd journal (from print() statements).
   StandardOutput=journal
   StandardError=journal
   SyslogIdentifier=pdu-manager
@@ -153,7 +154,6 @@ Additional information inserted as needed.
 Use of SSH protocol for remote command access requires the use of a public key. The SSH_ASKPASS environment variable is not an easy nor reliable approach to enable password-less ssh access to remote PDU.
 
   - For the Digital Web Logger PDU, login -> admin -> Setup -> General Network Settings -> Allowed SSH public keys
-
-Follow-up detail for Digital Web Logger PDU, remote API control is only available through its admin account.
+  - Follow-up detail for Digital Web Logger PDU: remote API control is only available through its admin account
 
 ...
