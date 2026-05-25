@@ -101,7 +101,7 @@ Under development...
 
     - e.g. sudo apt install git
     - e.g. wget https://github.com/WiringPi/WiringPi/releases/download/3.18/wiringpi_3.18_armhf.deb
-    - e.g. chmod +x ./wiringpi_3.18_armhf.deb
+    - e.g. chmod 755 ./wiringpi_3.18_armhf.deb
     - e.g. sudo apt install ./wiringpi_3.18_armhf.deb
 
   Test GPIO communication:
@@ -151,6 +151,8 @@ Under development...
 
     - e.g. sudo cp -rfp /home/pi/github/tank-cq-level/0.4 /usr/local/src/cqr-pdu
 
+  > NOTE: Update /usr/local/src/cqr-pdu/cqr_env.py to include the local IP address, user credential, outlet, and choice of protocol
+
 ### Step 3
 
   Create a service file located under /etc/systemd/system:
@@ -166,9 +168,9 @@ Under development...
   [Service]
   # The user and group that the service will run as (e.g., your RPi username).
   # Output from script must be sent to journal immediately.
-  Environment="PYTHONUNBUFFERED=1"
   User=pi
   Group=pi
+  Environment="PYTHONUNBUFFERED=1"
 
   # The directory where your script is located.
   WorkingDirectory=/usr/local/src/cqr-pdu/
@@ -208,9 +210,11 @@ Under development...
 
 Additional information inserted as needed.
 
-The option to use the SSH protocol for remote command access (vs. curl) requires the creation of a public key (i.e. ssh-keygen) to be placed on the remote PDU. Please note, that the SSH_ASKPASS environment variable is not an easy nor reliable alternative to enable password-less ssh access to the remote PDU commandline shell.
+The option to use the SSH protocol for remote command access (vs. curl) requires the creation of a public key (e.g. ssh-keygen -t ed25519 -C "pi@rpi-pump-01") to be placed on the remote PDU. Please note, that the SSH_ASKPASS environment variable is not an easy nor reliable alternative to enable password-less ssh access to the remote PDU commandline shell.
 
-  - For the Digital Web Logger PDU, login -> admin -> Setup -> General Network Settings -> Allowed SSH public keys
-  - Follow-up detail for Digital Web Logger PDU: remote API control is only available through its admin account
+  - For the Digital Web Logger PDU:
+    - login -> admin -> Setup -> General Network Settings -> Allowed SSH public keys
+  - Follow-up detail for Digital Web Logger PDU:
+    - remote API control is only available through its admin account
 
 ...
