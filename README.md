@@ -1,4 +1,5 @@
 ## Statement Of Work [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/awuehler/tank-cq-level)
+
 The primary goal for this project is to build a low cost solution to monitor a stand-alone AC chiller with an isolated condensation tank (i.e. no drain access). The tank requires manual dumping every 24 to 48 hours depending on seasonal temperature or humidity.
 
 Automating the water purge from the AC catch basin is based on an optical sensor used to identify water level. When a full tank is detected, that event is used to send a signal to a smart PDU. The PDU outlet used for the water pump is turned ON/OFF triggered by the optical sensor event.
@@ -23,6 +24,7 @@ The end to end summary is about purging the water from a catch basin (AC condens
   - Microcontroller board plus sensor probe
     - Wiki: [SKU: CQRSENYW002](http://www.cqrobot.wiki/index.php/Contact_Water/Liquid_Level_Sensor_SKU:_CQRSENYW002)
       - See "Prepare for RaspberryPi" section for system package install
+      - Or see: https://github.com/WiringPi/WiringPi
   - Approximate cost: $15 US (varies)
 
 - ECO-WORTHY RV Fresh Water Pump 12V DC 3.5GPM 45PSI Self Priming (or equivalent)
@@ -88,15 +90,34 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
 
 ## Base OS Configuration
 
-### Step 1
+### Step 0
 
-  Place a copy of the source code located under /usr/local/src/cqr-pdu
+  Install git package; download and install WiringPi package (v3.18 pre-compiled release currently):
 
-    - e.g. sudo cp -rfp /home/pi/github/tank-cq-level/0.4 /usr/local/src/cqr-pdu
+    - e.g. sudo apt install git
+    - e.g. wget https://github.com/WiringPi/WiringPi/releases/download/3.18/wiringpi_3.18_armhf.deb
+    - e.g. chmod +x ./wiringpi_3.18_armhf.deb
+    - e.g. sudo apt install ./wiringpi_3.18_armhf.deb
+
+  Test GPIO communication:
+
+    -e.g. gpio readall
+
+## Step 1
+
+  Download (clone) a copy of this Git repository:
+
+    - e.g. git clone https://github.com/awuehler/tank-cq-level.git
 
 ### Step 2
 
-  Create a service file located under /etc/systemd/system/pdu-manager.service
+  Place a copy of the current version of source code under /usr/local/src/cqr-pdu:
+
+    - e.g. sudo cp -rfp /home/pi/github/tank-cq-level/0.4 /usr/local/src/cqr-pdu
+
+### Step 3
+
+  Create a service file located under /etc/systemd/system/pdu-manager.service:
   
     - e.g. sudo vim /etc/systemd/system/pdu-manager.service
 
@@ -134,15 +155,15 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
   WantedBy=multi-user.target
 ```
 
-### Step 3
+### Step 4
 
-  Enable the new PDU Manager service
+  Enable the new PDU Manager service:
 
     - e.g. sudo systemctl daemon-reload ; sudo systemctl enable pdu-manager.service ; sudo systemctl start pdu-manager.service
 
-### Step 4
+### Step 5
 
-  Confirm the service status for PDU Manager and monitor the journal for sensor reports
+  Confirm the service status for PDU Manager and monitor the journal for sensor reports:
 
     - e.g. sudo systemctl status pdu-manager.service
     - e.g. sudo journalctl -f -u pdu-manager.service
