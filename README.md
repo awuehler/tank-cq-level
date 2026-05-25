@@ -89,6 +89,10 @@ Define a PDU Manager class for future improvements in support of +1 additional s
 
 Clean up, add comments, and make ready for initial deployment of end-2-end solution with pump hardware attached to AC chiller.
 
+## Version: 0.5
+
+Under development...
+
 ## Base OS Configuration
 
 ### Step 0
@@ -149,7 +153,7 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
 
 ### Step 3
 
-  Create a service file located under /etc/systemd/system/pdu-manager.service:
+  Create a service file located under /etc/systemd/system:
   
     - e.g. sudo vim /etc/systemd/system/pdu-manager.service
 
@@ -204,7 +208,7 @@ Clean up, add comments, and make ready for initial deployment of end-2-end solut
 
 Additional information inserted as needed.
 
-Use of SSH protocol for remote command access requires the use of a public key. The SSH_ASKPASS environment variable is not an easy nor reliable approach to enable password-less ssh access to remote PDU.
+The option to use the SSH protocol for remote command access (vs. curl) requires the creation of a public key (i.e. ssh-keygen) to be placed on the remote PDU. Please note, that the SSH_ASKPASS environment variable is not an easy nor reliable alternative to enable password-less ssh access to the remote PDU commandline shell.
 
   - For the Digital Web Logger PDU, login -> admin -> Setup -> General Network Settings -> Allowed SSH public keys
   - Follow-up detail for Digital Web Logger PDU: remote API control is only available through its admin account
