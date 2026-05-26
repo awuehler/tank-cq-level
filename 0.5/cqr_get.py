@@ -160,11 +160,11 @@ def main():
             # Read the RAW GPIO value (binary).
             cqr_value = GPIO.input(18)
 
-            if cqr_env.BOOL_OUTPUTS[:
+            if cqr_env.BOOL_OUTPUTS[0]:
                 if cqr_value == 0:
                     logging.info(f"CQRobot: {cqr_value} (H2O level below sensor)")
                     state = get_pdu_state()
-                    logging.info(f"{cqr_env.PDUS_SMARTLY[}: {state} (outlet power state)")
+                    logging.info(f"{cqr_env.PDUS_SMARTLY[4]}: {state} (outlet power state)")
 
                 elif cqr_value == 1:
                     logging.info(f"CQRobot: {cqr_value} (H2O level at sensor)")
@@ -174,7 +174,7 @@ def main():
                     
                     # Log state and trigger timer.
                     state = get_pdu_state()
-                    logging.info(f"{cqr_env.PDUS_SMARTLY[}: {state} (outlet power state)")
+                    logging.info(f"{cqr_env.PDUS_SMARTLY[4]}: {state} (outlet power state)")
                     
                     # Call non-blocking timer.
                     subprocess.Popen([sys.executable, "cqr_sec.py", cqr_env.TIME_CHECKED[1]])
@@ -184,7 +184,7 @@ def main():
                     # TODO: Implement recovery logic (e.g., reset GPIO/alert)
                     break
 
-            time.sleep(float(cqr_env.TIME_CHECKED[))
+            time.sleep(float(cqr_env.TIME_CHECKED[0]))
     
     except KeyboardInterrupt:
         logging.info("Program stopped by user.")
