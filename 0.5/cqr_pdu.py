@@ -88,13 +88,13 @@ class PDUManager:
     # Vendor specific PDU API calls.
     def pdu_curl(self, vendor: str, outlet: str, action: str):
         '''
-        Executes a curl command for PDU based on vendor, outlet, and action.
+'''        Executes a curl command for PDU based on vendor, outlet, and action.
         
         Args:
             vendor (str): The vendor name.
             outlet (str): The specific outlet identifier.
             action (str): 'set' (triggers PUT) or 'get' (triggers POST).
-        '''
+'''        '''
 
         # TODO: Use vendor parameter to support additonal smart PDU APIs.
         # TODO: Update cqr_env to support 2nd or additional PDU models.
@@ -155,13 +155,13 @@ class PDUManager:
     # Vendor specific PDU API calls.
     def pdu_url(self, protocol: str, outlet: str, action: str):
         '''
-        Executes a curl command for PDU based on vendor, outlet, and action.
+'''        Executes a curl command for PDU based on vendor, outlet, and action.
         
         Args:
             protocol (str): HTTP/S or SSH.
             outlet (str): The specific outlet identifier.
             action (str): 'set' (triggers PUT) or 'get' (triggers POST).
-        '''
+'''        '''
 
         if protocol.lower() == "http":
             # Determine the HTTP method based on the input action.
