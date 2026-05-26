@@ -345,7 +345,7 @@ class PDUManager:
             http_method = "POST"
             target_path = f"/restapi/relay/outlets/{pdu_outlet}/=name,physical_state/"
             action_data = ""
-            headers = ['-H', 'Accept: application/json']
+            headers = ['-H', 'Accept: application/json', '-H', 'X-CSRF: x']
 
         # 2. Build the Subprocess Arguments.
         if protocol.lower() == "http":
