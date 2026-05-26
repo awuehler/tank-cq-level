@@ -342,7 +342,7 @@ class PDUManager:
             action_data = f"value={action}"
             headers = ['-H', 'X-CSRF: x']
         else:  # action == "get"
-            http_method = "POST"
+            http_method = "GET"
             target_path = f"/restapi/relay/outlets/{pdu_outlet}/=name,physical_state/"
             action_data = ""
             headers = ['-H', 'Accept: application/json', '-H', 'X-CSRF: x']
