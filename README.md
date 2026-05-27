@@ -1,8 +1,8 @@
 ## Statement Of Work [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/awuehler/tank-cq-level)
 
-The primary goal for this project is to build a low cost solution to monitor a stand-alone AC chiller with an isolated condensation tank (i.e. no drain access). The tank requires manual dumping every 24 to 48 hours depending on seasonal temperature or humidity.
+The primary goal for this project is to build a low cost solution to monitor a stand-alone AC chiller with an isolated condensation tank (i.e. no drain access). Thus the water collection tank requires manual dumping every 24 to 48 hours depending on seasonal temperature or humidity.
 
-Automating the water purge from the AC catch basin is based on an optical sensor used to identify water level. When a full tank is detected, that event is used to send a signal to a smart PDU. The PDU outlet used for the water pump is turned ON/OFF triggered by the optical sensor event.
+Automating a water purge from the AC catch basin is based on an optical sensor used to identify water level height. When a full tank is detected, that event is used to send a signal to a smart PDU. The PDU outlet controlling the water pump is turned ON/OFF triggered by the optical sensor event.
 
 This feedback loop depends on several factors:
 
@@ -10,7 +10,7 @@ This feedback loop depends on several factors:
   - Smart PDU network access to enable remote API call
   - Custom script (Bash, Python, ...) to monitor GPIO pin signal
 
-The end to end summary is about purging the water from a catch basin (AC condensation tank) as it fills up using a small controller (Raspberry Pi) and sensor (CQRobot optical) to turn ON and turn OFF a pump without the need for daily or weekly human assistance.
+The end to end summary is to purge the water from a catch basin (i.e. AC condensation tank) as it fills up using a small controller (Raspberry Pi) and a sensor (CQRobot optical) to turn ON and turn OFF a pump without the need for daily or weekly human assistance.
 
 ## Hardware Inventory Required
 
@@ -18,13 +18,13 @@ The end to end summary is about purging the water from a catch basin (AC condens
   - Pi Zero Case Kit Compatible Pin Header
   - Micro USB Cable Power Supply 5.25 Volts 3 Amps for Raspberry Pi Zero Board
   - Additional attachments (as needed) for USB, and/or HDMI devices
-  - Approximate cost: $20 US (varies)
+  - Approximate cost: $40 US (varies)
 
 - CQRobot Contact Water/Liquid Level Sensor (or equivalent)
   - Microcontroller board plus sensor probe
     - Wiki: [SKU: CQRSENYW002](http://www.cqrobot.wiki/index.php/Contact_Water/Liquid_Level_Sensor_SKU:_CQRSENYW002)
       - Refer to the GPIO pin diagram for Raspberry Pi
-    - Use of active WiringPi project is now required (the Wiki "Prepare for Raspberry Pi" section is obsolete)
+    - Use of the WiringPi project is now required (the Wiki "Prepare for Raspberry Pi" section is now obsolete)
       - See: https://github.com/WiringPi/WiringPi
   - Approximate cost: $15 US (varies)
 
@@ -34,7 +34,7 @@ The end to end summary is about purging the water from a catch basin (AC condens
   - Approximate cost: $60 US (varies)
 
 - Digital Web Loggers Smart PDU (or equivalent)
-  - Must support remote outlet ON/OFF cycling via Telnet, SSH, or HTTP/S
+  - Must support remote outlet ON/OFF cycling via SSH or HTTP/S
     - See: https://www.digital-loggers.com/restapi.pdf
   - Approximate cost: $300 US (varies)
 
@@ -45,7 +45,7 @@ The end to end summary is about purging the water from a catch basin (AC condens
 
 Republish the sample C code and convert it for use in Python running on the RPi platform.
 
-Initial check using GPT-5 to assist with the conversion of the sample C program to Python; used the following prompt:
+Initial check using GPT-5 to assist with the conversion of the sample C program to Python based on the following prompt:
 
 `Analyze the following program. This code is written in the C programming language. It runs on the Raspberry Pi zero W using the Debian Bookworm OS. The GitHub WiringPi project for GPIO is installed to support the CQRobot Contact Water/Liquid Level Sensor. Please convert this code to Python:`
 
@@ -57,15 +57,15 @@ The resulting output in Python was mostly correct, except for using the wrong GP
 
 ## Version: 0.1
 
-Proof of concept to report each state change whenever the optical sensor detected water. Confirmed angle of operation limitation due to drip of water clinging to it whenever the sensor is placed off angle to water surface (results in false positive reading until the droplet is removed). Operational work-around is the need to apply a protective hydrophobic coating to remedy i.e. prevent.
+Proof of concept to report each state change whenever the optical sensor detects water. Confirmed angle of operation limitation due to drip of water clinging to it whenever the sensor is placed off angle to water surface (results in false positive reading until the droplet is removed). Operational work-around is the need to apply a protective hydrophobic coating to remedy i.e. prevent.
 
 ## Version: 0.2
 
-Re-align functional areas into sparate files for environment, timer, pdu, and main.
+Refactor functional coding areas into sparate files for environment, timer, pdu, and main.
 
 ## Version: 0.3
 
-Define a PDU Manager class for future improvements in support of +1 additional smart PDU vendors. Refine logging for clear reporting of water level e.g.
+Define a PDU Manager class for future improvements in support of additional smart PDU vendors; refine logging for clear reporting of water level e.g.
 
 ```
   2026-05-17 16:39:59.139908  CQRobot: 0 (H2O level below sensor)  DWL: ['AC Chill #3', False] (outlet power state)
@@ -87,7 +87,7 @@ Define a PDU Manager class for future improvements in support of +1 additional s
 
 ## Version: 0.4
 
-Clean up, add comments, and make ready for initial deployment of end-2-end solution with pump hardware attached to AC chiller.
+Clean up, test, add comments, and make ready for initial deployment of end-2-end solution with pump hardware attached to AC chiller.
 
 ## Version: 0.5
 
@@ -151,7 +151,7 @@ Under development...
 
     - e.g. sudo cp -rfp /home/pi/github/tank-cq-level/0.4 /usr/local/src/cqr-pdu
 
-  > NOTE: Update /usr/local/src/cqr-pdu/cqr_env.py to include the local IP address, user credential, outlet, and choice of protocol
+  > NOTE: Update /usr/local/src/cqr-pdu/cqr_env.py file to include the PDU IP address, user credential, outlet, and choice of protocol
 
 ### Step 3
 
@@ -162,12 +162,12 @@ Under development...
 ```
   [Unit]
   Description=PDU Manager Python Service
-  # Ensures the network is up before starting this script (for script curl commands).
+  # Ensures the network is up before starting this script.
   After=network.target
 
   [Service]
   # The user and group that the service will run as (e.g., your RPi username).
-  # Output from script must be sent to journal immediately.
+  # And send output from script to journal immediately.
   User=pi
   Group=pi
   Environment="PYTHONUNBUFFERED=1"
@@ -180,10 +180,10 @@ Under development...
 
   # Automatically restart the service if it crashes.
   Restart=always
-  # Wait 11 seconds before restarting
-  RestartSec=11
+  # Wait 13 seconds before restarting
+  RestartSec=13
 
-  # Capture standard output/error to the systemd journal (from print() statements).
+  # Capture standard output/error to the systemd journal.
   StandardOutput=journal
   StandardError=journal
   SyslogIdentifier=pdu-manager
@@ -201,7 +201,7 @@ Under development...
 
 ### Step 5
 
-  Confirm the service status for PDU Manager and monitor the journal for sensor reports:
+  Confirm the service status for PDU Manager and/or monitor the journal for sensor reports:
 
     - e.g. sudo systemctl status pdu-manager.service
     - e.g. sudo journalctl -f -u pdu-manager.service

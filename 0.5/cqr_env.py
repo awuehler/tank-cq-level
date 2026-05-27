@@ -1,3 +1,6 @@
+# TODO:
+#   - Extend to include +1 vendor support
+#   - Refactor
 # ----------------------------------------------------------------------
 # Optimize for runtime ...
 PUMP_FEATURE = ["3.5 GPM", "45 PSI"]            # Seed values pump
