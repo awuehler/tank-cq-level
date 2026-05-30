@@ -11,7 +11,7 @@ Descriptions
         Sucess | Failure
 
 Notes
-    This is a tiny feedback loop which can be optimized as per the
+    This is a basic feedback loop which can be optimized as per the
     local conditions each RPi controller detects given the daily
     fluctuations in temperature and humidity.
 
@@ -29,19 +29,17 @@ Improvements
 # ----------------------------------------------------------------------
 # Module(s).
 # ----------------------------------------------------------------------
-import sys
-import time
-import logging
+import logging, sys, time
 from datetime import datetime
-
-# Configure journal logging replacing print statements for state changes.
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # ----------------------------------------------------------------------
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
 from cqr_pdu import pdu_curl, pdu_url
+
+# Configure journal logging replacing print statements for state changes.
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def simple_timer(count):
     # Log state change event.
@@ -65,7 +63,7 @@ def simple_timer(count):
             OFF_OUTLET = pdu_curl(vendor=vendor_info, outlet=outlet_info, action="FALSE")
             #logging.info("PDU outlet turned off via HTTP successfully.")
         except Exception as e:
-            # Note: Replace 'Exception' with specific HTTP request errors if possible
+            # NOTE: Replace 'Exception' with specific HTTP request errors if possible
             logging.error(f"Error executing pdu_curl: {e}")
 
     elif protocol_info == "ssh":
@@ -73,7 +71,7 @@ def simple_timer(count):
             OFF_OUTLET = pdu_url(protocol="SSH", outlet=outlet_info, action="FALSE")
             #logging.info("PDU outlet turned off via SSH successfully.")
         except Exception as e:
-            # Note: Replace 'Exception' with specific SSH connection errors if possible
+            # NOTE: Replace 'Exception' with specific SSH connection errors if possible
             logging.error(f"Error executing pdu_url: {e}")
 
 if __name__ == "__main__":

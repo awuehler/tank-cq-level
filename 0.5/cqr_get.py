@@ -31,19 +31,16 @@ Improvements
 # Module(s).
 # ----------------------------------------------------------------------
 import RPi.GPIO as GPIO
-import subprocess
-import sys
-import time
-import logging
-
-# Configure logging to system journal.
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+import logging, subprocess, sys, time
 
 # ----------------------------------------------------------------------
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
 from cqr_pdu import pdu_url
+
+# Configure journal logging replacing print statements for state changes.
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define mode to use GPIO pin via BCM pin numbering.
 GPIO.setmode(GPIO.BCM)

@@ -5,7 +5,7 @@ Descriptions
     Auto-detects JSON responses and returns them as dicts for additional use.
     
     Parameters:
-        command (list): The curl command and its arguments as a list.
+        command (list): The curl or ssh arguments as a list.
 
 Notes
     Reference: https://www.digital-loggers.com/restapi.pdf
@@ -18,9 +18,9 @@ Notes
         Example: document reference
             curl -s -k -H "Accept: application/json" --digest "https://<USER>:<PASS>@<IP>/restapi/relay/outlets/=<0-7>/state/"
         Example: key-values
-            curl -k --digest -u admin:admin -H "Accept: application/json" --digest 'http://192.168.156.109/restapi/relay/outlets/0/=name,physical_state/'
+            curl -k --digest -u <USER>:<PASS> -H "Accept: application/json" --digest 'http://<IP>/restapi/relay/outlets/0/=name,physical_state/'
         Example: authentication
-            curl -s -k --digest --user admin:admin -X PUT -H "X-CSRF: x" --data "value=true" 'http://192.168.156.109/restapi/relay/outlets/7/state/'
+            curl -s -k --digest --user <USER>:<PASS> -X PUT -H "X-CSRF: x" --data "value=true" 'http://<IP>/restapi/relay/outlets/7/state/'
 
     # PDU session token.
         PDU_TARGET = f"https://{cqr_env.PDUS_SMARTLY[1]}/api/login"
@@ -42,17 +42,15 @@ Improvements
 # ----------------------------------------------------------------------
 # Module(s).
 # ----------------------------------------------------------------------
-import json
-import subprocess
-import logging
-
-# Configure module-level logger.
-logger = logging.getLogger(__name__)
+import json, logging, subprocess
 
 # ----------------------------------------------------------------------
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
+
+# Configure journal logging replacing print statements for state changes.
+logger = logging.getLogger(__name__)
 
 # Define a PDU class.
 class PDUManager:
@@ -165,4 +163,3 @@ _pdu_instance = PDUManager()
 run_curl = _pdu_instance.run_curl
 pdu_curl = _pdu_instance.pdu_curl
 pdu_url  = _pdu_instance.pdu_url
- 

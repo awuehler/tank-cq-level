@@ -41,27 +41,13 @@ The end to end summary is to purge the water from a catch basin (i.e. AC condens
 - Additional items include: tubing, one-way inline check valve, water proofing materials, ...
   - Approximate cost: $50 US (varies)
 
-## Version: 0.0
+## Version: 0.5
 
-Republish the sample C code and convert it for use in Python running on the RPi platform.
+Under development... refactor, & add features.
 
-Initial check using GPT-5 to assist with the conversion of the sample C program to Python based on the following prompt:
+## Version: 0.4
 
-`Analyze the following program. This code is written in the C programming language. It runs on the Raspberry Pi zero W using the Debian Bookworm OS. The GitHub WiringPi project for GPIO is installed to support the CQRobot Contact Water/Liquid Level Sensor. Please convert this code to Python:`
-
- - See: [cqrobot.c](https://github.com/awuehler/tank-cq-level/blob/main/0.0/cqrobot.c)
-
-The resulting output in Python was mostly correct, except for using the wrong GPIO pin (for Raspberry Pi it is pin 18). The corrected working version is available for reference:
-
- - See: [cqrobot.py](https://github.com/awuehler/tank-cq-level/blob/main/0.0/cqrobot.py)
-
-## Version: 0.1
-
-Proof of concept to report each state change whenever the optical sensor detects water. Confirmed angle of operation limitation due to drip of water clinging to it whenever the sensor is placed off angle to water surface (results in false positive reading until the droplet is removed). Operational work-around is the need to apply a protective hydrophobic coating to remedy i.e. prevent.
-
-## Version: 0.2
-
-Refactor functional coding areas into sparate files for environment, timer, pdu, and main.
+Clean up, test, add comments, and make ready for initial deployment of end-2-end solution with pump hardware attached to AC chiller.
 
 ## Version: 0.3
 
@@ -85,13 +71,27 @@ Define a PDU Manager class for future improvements in support of additional smar
   2026-05-17 16:41:29.607391  CQRobot: 0 (H2O level below sensor)  DWL: ['AC Chill #3', False] (outlet power state)
 ```
 
-## Version: 0.4
+## Version: 0.2
 
-Clean up, test, add comments, and make ready for initial deployment of end-2-end solution with pump hardware attached to AC chiller.
+Refactor functional coding areas into sparate files for environment, timer, pdu, and main.
 
-## Version: 0.5
+## Version: 0.1
 
-Under development...
+Proof of concept to report each state change whenever the optical sensor detects water. Confirmed angle of operation limitation due to drip of water clinging to it whenever the sensor is placed off angle to water surface (results in false positive reading until the droplet is removed). Operational work-around is the need to apply a protective hydrophobic coating to remedy i.e. prevent.
+
+## Version: 0.0
+
+Republish the sample C code and convert it for use in Python running on the RPi platform.
+
+Initial check using GPT-5 to assist with the conversion of the sample C program to Python based on the following prompt:
+
+`Analyze the following program. This code is written in the C programming language. It runs on the Raspberry Pi zero W using the Debian Bookworm OS. The GitHub WiringPi project for GPIO is installed to support the CQRobot Contact Water/Liquid Level Sensor. Please convert this code to Python:`
+
+ - See: [cqrobot.c](https://github.com/awuehler/tank-cq-level/blob/main/0.0/cqrobot.c)
+
+The resulting output in Python was mostly correct, except for using the wrong GPIO pin (for Raspberry Pi it is pin 18). The corrected working version is available for reference:
+
+ - See: [cqrobot.py](https://github.com/awuehler/tank-cq-level/blob/main/0.0/cqrobot.py)
 
 ## Base OS Configuration
 
