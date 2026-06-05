@@ -46,6 +46,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.IN)
 
+# A variable to poll for running subprocess.
+poll_process = None
+
 def get_pdu_state():
     # Helper to fetch PDU status.
     return pdu_url(protocol=cqr_env.PDUS_SMARTLY[5], outlet=cqr_env.PDUS_SMARTLY[4], action="GET")
@@ -75,7 +78,15 @@ def main():
                     logging.info(f"{cqr_env.PDUS_SMARTLY[4]}: {state} (outlet power state)")
                     
                     # Call non-blocking timer.
-                    subprocess.Popen([sys.executable, "cqr_sec.py", cqr_env.TIME_CHECKED[1]])
+                    #subprocess.Popen([sys.executable, "cqr_sec.py", cqr_env.TIME_CHECKED[1]])
+                    # Check if the subprocess doesn't exist yet, or if it has finished running.
+                    if poll_process is None or poll_process.poll() is not None:
+                        # Call non-blocking timer.
+                        poll_process = subprocess.Popen([sys.executable, "cqr_sec.py", cqr_env.TIME_CHECKED[1]])
+                    else:
+                        # Do nothing and loop again.
+                        # NOTE: Add logging.info to debug
+                        pass
                 
                 else:
                     logging.error(f"{cqr_value}: Unexpected sensor reading.")
