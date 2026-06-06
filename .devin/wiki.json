@@ -1,0 +1,154 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "Project Overview",
+      "purpose": "High-level introduction to the tank-cq-level project: its purpose, hardware inventory, end-to-end automation loop, and version history. Links to child pages for hardware context and deployment.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Hardware Inventory & System Architecture",
+      "purpose": "Describes all physical components required (Raspberry Pi Zero W, CQRobot optical sensor, ECO-WORTHY RV pump, Digital Web Loggers Smart PDU), how they interconnect, and the overall feedback loop from sensor detection to pump activation.",
+      "parent": "Project Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Version History & Evolution",
+      "purpose": "Traces the project's development across versions 0.0 through 0.4: from the original C sample and Python port, through the proof-of-concept, modular refactor, PDUManager class introduction, and final deployment-ready state.",
+      "parent": "Project Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Core Software Architecture",
+      "purpose": "Overview of the modular Python architecture used from v0.2 onward: the four-file layout (cqr_env, cqr_get, cqr_pdu, cqr_sec), their responsibilities, and how they interact. Links to child pages for each module.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Environment Configuration (cqr_env.py)",
+      "purpose": "Details the centralized configuration module present in every version (0.1–0.4). Covers all exported constants: PUMP_FEATURE, TANK_FEATURE, TIME_CHECKED, BOOL_OUTPUTS, and PDUS_SMARTLY, including their meaning, units, and how consuming modules use them.",
+      "parent": "Core Software Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Main Monitoring Loop (cqr_get.py)",
+      "purpose": "Deep dive into the primary entry point script across versions. Covers GPIO initialization, the while-True polling loop, CQR_VALUE branching logic (0/1/error), PDU state queries, subprocess spawning of cqr_sec.py, graceful shutdown via KeyboardInterrupt, and the bootstrap pre-check in __main__.",
+      "parent": "Core Software Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "PDU Control Layer (cqr_pdu.py)",
+      "purpose": "Explains the PDU abstraction layer: the evolution from a standalone run_curl function (v0.2) to the PDUManager class (v0.3/0.4). Covers run_curl, pdu_curl, the Digital Loggers REST API endpoints, Digest authentication, CSRF headers, JSON auto-detection, and the module-level instance binding pattern.",
+      "parent": "Core Software Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Pump Timer (cqr_sec.py)",
+      "purpose": "Documents the countdown timer subprocess: the simple_timer function, how it is spawned as a non-blocking Popen child process, the countdown loop with 5-second interval logging, and the final curl PUT to turn off PDU outlet 7 when the timer expires.",
+      "parent": "Core Software Architecture",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "GPIO & Sensor Integration",
+      "purpose": "Overview of how the Raspberry Pi GPIO interface is used to read the CQRobot water sensor, linking to child pages for the original C implementation and the Python port.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Original C Implementation (cqrobot.c)",
+      "purpose": "Covers the original WiringPi-based C program in 0.0/: wiringPiSetup, pinMode(1, INPUT), the digitalRead polling loop, and the binary liquid/no-liquid output. Explains why this served as the starting reference for the Python port.",
+      "parent": "GPIO & Sensor Integration",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Python GPIO Port (cqrobot.py)",
+      "purpose": "Covers the RPi.GPIO-based Python translation in 0.0/: BCM pin numbering, GPIO.setup(18, GPIO.IN), the 1 Hz polling loop with time.sleep(1), the try/finally GPIO.cleanup() pattern, and the pin correction from 17 to 18 vs the C original.",
+      "parent": "GPIO & Sensor Integration",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Deployment & Operations",
+      "purpose": "Guide for deploying the production-ready v0.4 code on a Raspberry Pi as a systemd service. Links to child pages for setup steps and runtime monitoring.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "systemd Service Setup",
+      "purpose": "Step-by-step instructions for installing the pdu-manager.service unit file: copying source to /usr/local/src/cqr-pdu, creating the service file under /etc/systemd/system/, enabling and starting the service, and verifying status with systemctl and journalctl.",
+      "parent": "Deployment & Operations",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Runtime Configuration & Tuning",
+      "purpose": "Explains how to adjust cqr_env.py constants for a specific deployment: changing PDU IP/credentials in PDUS_SMARTLY, tuning TIME_CHECKED polling intervals, toggling BOOL_OUTPUTS verbosity, and understanding PUMP_FEATURE/TANK_FEATURE seed values.",
+      "parent": "Deployment & Operations",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Glossary",
+      "purpose": "Definition of any codebase-specific terms, hardware abbreviations, API concepts, and domain vocabulary used throughout the project. Each entry includes code pointers to relevant files and line references.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
