@@ -21,90 +21,134 @@ Dependencies
         4. WiFi (between RPi & PDU)
 
 Improvements
-    - Define functions for each condition
-    - Add priori state change awareness
     - ENV heartbeats & restarts: SYS, WiFi, PDU, DNS, etc.
+    - Sensor debounce for droplet false positives
     - ...
 '''
 
 # ----------------------------------------------------------------------
 # Module(s).
 # ----------------------------------------------------------------------
-import RPi.GPIO as GPIO
-import logging, subprocess, sys, time
+import logging
+import subprocess
+import sys
+import time
+from pathlib import Path
 
 # ----------------------------------------------------------------------
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
-from cqr_pdu import pdu_url
+from cqr_pdu import pdu_ok, pdu_url
 
-# Configure journal logging replacing print statements for state changes.
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Define mode to use GPIO pin via BCM pin numbering.
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.IN)
+# Directory containing this script (used for absolute cqr_sec.py path).
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_TIMER_SCRIPT = _SCRIPT_DIR / "cqr_sec.py"
 
-# A variable to poll for running subprocess.
+# Runtime loop state (initialized in main / tests).
 poll_process = None
+last_sensor = 0
+timer_was_running = False
+_gpio = None
+
+
+def setup_gpio(pin: int | None = None):
+    """Initialize BCM GPIO input. Called from main so imports stay hardware-free."""
+    global _gpio
+    import RPi.GPIO as GPIO
+
+    pin = cqr_env.GPIO_PIN if pin is None else pin
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(pin, GPIO.IN)
+    _gpio = GPIO
+    return GPIO
+
 
 def get_pdu_state():
-    # Helper to fetch PDU status.
-    return pdu_url(protocol=cqr_env.PDUS_SMARTLY[5], outlet=cqr_env.PDUS_SMARTLY[4], action="GET")
+    pdu = cqr_env.PDU
+    return pdu_url(protocol=pdu.protocol, outlet=pdu.outlet, action="GET")
+
+
+def start_pump_cycle():
+    """Turn PDU outlet ON and spawn the non-blocking off-timer if ON succeeds."""
+    global poll_process, timer_was_running
+
+    pdu = cqr_env.PDU
+    result = pdu_url(protocol=pdu.protocol, outlet=pdu.outlet, action="TRUE")
+    if not pdu_ok(result):
+        logging.error(f"PDU outlet ON failed; timer not started. result={result}")
+        return False
+
+    if cqr_env.BOOL_OUTPUTS[0]:
+        state = get_pdu_state()
+        logging.info(f"{pdu.outlet}: {state} (outlet power state)")
+
+    poll_process = subprocess.Popen(
+        [
+            sys.executable,
+            str(_TIMER_SCRIPT),
+            str(int(cqr_env.PUMP_ON_DURATION_SEC)),
+        ]
+    )
+    return True
+
 
 def main():
+    global poll_process, last_sensor, timer_was_running, _gpio
+
+    gpio = _gpio if _gpio is not None else setup_gpio()
     logging.info("Starting water sensor monitoring loop.")
-    
+
     try:
         while True:
-            # Read the RAW GPIO value (binary).
-            cqr_value = GPIO.input(18)
+            cqr_value = gpio.input(cqr_env.GPIO_PIN)
+            timer_running = poll_process is not None and poll_process.poll() is None
+            timer_finished = timer_was_running and not timer_running
 
-            if cqr_env.BOOL_OUTPUTS[0]:
-                if cqr_value == 0:
+            if cqr_value == 0:
+                if cqr_env.BOOL_OUTPUTS[0]:
                     logging.info(f"CQRobot: {cqr_value} (H2O level below sensor)")
                     state = get_pdu_state()
-                    logging.info(f"{cqr_env.PDUS_SMARTLY[4]}: {state} (outlet power state)")
+                    logging.info(f"{cqr_env.PDU.outlet}: {state} (outlet power state)")
 
-                elif cqr_value == 1:
+            elif cqr_value == 1:
+                if cqr_env.BOOL_OUTPUTS[0]:
                     logging.info(f"CQRobot: {cqr_value} (H2O level at sensor)")
-                    
-                    # Trigger PDU state change.
-                    pdu_url(protocol=cqr_env.PDUS_SMARTLY[5], outlet=cqr_env.PDUS_SMARTLY[4], action="TRUE")
-                    
-                    # Log state and trigger timer.
-                    state = get_pdu_state()
-                    logging.info(f"{cqr_env.PDUS_SMARTLY[4]}: {state} (outlet power state)")
-                    
-                    # Call non-blocking timer.
-                    #subprocess.Popen([sys.executable, "cqr_sec.py", cqr_env.TIME_CHECKED[1]])
-                    # Check if the subprocess doesn't exist yet, or if it has finished running.
-                    if poll_process is None or poll_process.poll() is not None:
-                        # Call non-blocking timer.
-                        poll_process = subprocess.Popen([sys.executable, "cqr_sec.py", cqr_env.TIME_CHECKED[1]])
-                    else:
-                        # Do nothing and loop again.
-                        # NOTE: Add logging.info to debug
-                        pass
-                
-                else:
-                    logging.error(f"{cqr_value}: Unexpected sensor reading.")
-                    # TODO: Implement recovery logic (e.g., reset GPIO/alert)
-                    break
 
-            time.sleep(float(cqr_env.TIME_CHECKED[0]))
-    
+                rising_edge = last_sensor == 0
+                should_start = (not timer_running) and (rising_edge or timer_finished)
+
+                if should_start:
+                    if start_pump_cycle():
+                        timer_running = True
+
+            else:
+                logging.error(f"{cqr_value}: Unexpected sensor reading.")
+                # TODO: Implement recovery logic (e.g., reset GPIO/alert)
+                break
+
+            last_sensor = cqr_value
+            timer_was_running = timer_running
+            time.sleep(float(cqr_env.POLL_INTERVAL_SEC))
+
     except KeyboardInterrupt:
         logging.info("Program stopped by user.")
     finally:
-        GPIO.cleanup()
+        if _gpio is not None:
+            _gpio.cleanup()
+            _gpio = None
+
 
 if __name__ == "__main__":
-    # Bootstrap: Ensure outlet is OFF on startup.
+    setup_gpio()
     try:
-        pdu_url(protocol=cqr_env.PDUS_SMARTLY[5], outlet=cqr_env.PDUS_SMARTLY[4], action="FALSE")
+        pdu = cqr_env.PDU
+        result = pdu_url(protocol=pdu.protocol, outlet=pdu.outlet, action="FALSE")
+        if not pdu_ok(result):
+            logging.error(f"Failed to bootstrap PDU state OFF: {result}")
     except Exception as e:
         logging.error(f"Failed to bootstrap PDU state: {e}")
-        
+
     main()

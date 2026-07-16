@@ -1,80 +1,85 @@
 {
   "repo_notes": [
     {
-      "content": "tank-cq-level is a Raspberry Pi Zero W automation project that monitors a CQRobot optical water-level sensor (GPIO BCM pin 18) and turns a pump on/off via a Digital Loggers smart PDU when an AC chiller condensation tank is full. Source is organized as versioned snapshots (0.0 through 0.5), not a single package layout. Prefer documenting the latest version under 0.5/ as current; older folders (0.0–0.4) are historical evolution. Core modules: cqr_get.py (main GPIO monitoring loop), cqr_pdu.py (PDUManager for HTTP/SSH outlet control), cqr_sec.py (non-blocking pump-on timer), cqr_env.py (site config: PDU IP, credentials, outlet, intervals). Deployment target is a systemd service (pdu-manager) on Debian Bookworm with WiringPi/RPi.GPIO. Do not treat credential placeholders in cqr_env.py as real secrets; they are local site configuration templates.",
+      "content": "tank-cq-level is a Raspberry Pi Zero W automation project that monitors a CQRobot optical water-level sensor and turns a pump on/off via a Digital Loggers smart PDU when an AC chiller condensation tank is full. Source is organized as versioned snapshots (0.0 through 0.5), not a single package layout. Prefer documenting 0.5/ as current; 0.0–0.4 are historical. In 0.5: cqr_env.py uses a frozen PduConfig dataclass (PDU) plus typed timing (POLL_INTERVAL_SEC, PUMP_ON_DURATION_SEC), GPIO_PIN, PDU_COMMAND_TIMEOUT_SEC, and PDU_TLS_INSECURE; cqr_get.py edge-triggers pump ON (0→1) with re-arm after OFF, lazy setup_gpio(), absolute path to cqr_sec.py, and pdu_ok() checks before starting the timer; cqr_pdu.py PDUManager wraps curl/ssh with subprocess timeouts, optional -k via PDU_TLS_INSECURE, and pdu_ok(); cqr_sec.py turns the outlet OFF after countdown and raises on invalid protocol or failed OFF. Automated tests live under 0.5/tests/ (pytest). Deployment target is systemd service pdu-manager on Debian Bookworm with RPi.GPIO (WiringPi used for gpio readall during setup). Credential placeholders in cqr_env.PDU are site templates, not real secrets.",
       "author": "awuehler"
     }
   ],
   "pages": [
     {
       "title": "Project Overview",
-      "purpose": "High-level introduction to the tank-cq-level project: its purpose, hardware inventory, end-to-end automation loop, and version history. Links to child pages for hardware context and deployment."
+      "purpose": "High-level introduction to tank-cq-level: purpose, hardware inventory, end-to-end automation loop (sensor → Pi → PDU → pump), and version history. Prefer 0.5/ as the current software reference."
     },
     {
       "title": "Hardware Inventory & System Architecture",
-      "purpose": "Describes all physical components required (Raspberry Pi Zero W, CQRobot optical sensor, ECO-WORTHY RV pump, Digital Web Loggers Smart PDU), how they interconnect, and the overall feedback loop from sensor detection to pump activation.",
+      "purpose": "Describe physical components (Raspberry Pi Zero W, CQRobot optical sensor, ECO-WORTHY RV pump, Digital Loggers smart PDU), how they interconnect, and the feedback loop from sensor detection to pump activation.",
       "parent": "Project Overview"
     },
     {
       "title": "Version History & Evolution",
-      "purpose": "Traces the project's development across versions 0.0 through 0.5: from the original C sample and Python port, through the proof-of-concept, modular refactor, PDUManager class introduction, deployment-ready 0.4, and the in-progress 0.5 refactor.",
+      "purpose": "Trace development from 0.0 (C sample and Python port) through 0.1–0.4 (PoC, modular refactor, PDUManager, deploy cleanup) to 0.5 (PduConfig, edge-triggered control, timeouts, pdu_ok, pytest suite). Note droplet false-positive workaround (hydrophobic coating).",
       "parent": "Project Overview"
     },
     {
-      "title": "Core Software Architecture",
-      "purpose": "Overview of the modular Python architecture used from v0.2 onward: the four-file layout (cqr_env, cqr_get, cqr_pdu, cqr_sec), their responsibilities, and how they interact. Prefer 0.5/ as the current reference; older version folders are historical. Links to child pages for each module."
+      "title": "Core Software Architecture (v0.5)",
+      "purpose": "Overview of the four-module Python layout in 0.5/: cqr_env, cqr_get, cqr_pdu, cqr_sec — responsibilities, edge-triggered pump cycles, single non-blocking timer child, and how modules interact. Link to child pages for each module and the test suite."
     },
     {
       "title": "Environment Configuration (cqr_env.py)",
-      "purpose": "Details the centralized configuration module present in versions 0.1–0.5. Covers all exported constants: PUMP_FEATURE, TANK_FEATURE, TIME_CHECKED, BOOL_OUTPUTS, and PDUS_SMARTLY, including their meaning, units, and how consuming modules use them.",
-      "parent": "Core Software Architecture"
+      "purpose": "Document 0.5 cqr_env.py: PduConfig/PDU fields (vendor, host, user, password, outlet, protocol), POLL_INTERVAL_SEC, PUMP_ON_DURATION_SEC, BOOL_OUTPUTS, GPIO_PIN, PDU_COMMAND_TIMEOUT_SEC, PDU_TLS_INSECURE, and TIME_CHECKED back-compat aliases.",
+      "parent": "Core Software Architecture (v0.5)"
     },
     {
       "title": "Main Monitoring Loop (cqr_get.py)",
-      "purpose": "Deep dive into the primary entry point script across versions. Covers GPIO initialization, the while-True polling loop, CQR_VALUE branching logic (0/1/error), PDU state queries, subprocess spawning of cqr_sec.py, graceful shutdown via KeyboardInterrupt, and the bootstrap pre-check in __main__.",
-      "parent": "Core Software Architecture"
+      "purpose": "Document 0.5 cqr_get.py: setup_gpio() (hardware-free import), rising-edge / post-OFF re-arm logic, start_pump_cycle() with pdu_ok gate, absolute Path spawn of cqr_sec.py, verbose vs control path (BOOL_OUTPUTS), bootstrap OFF in __main__, and KeyboardInterrupt cleanup.",
+      "parent": "Core Software Architecture (v0.5)"
     },
     {
       "title": "PDU Control Layer (cqr_pdu.py)",
-      "purpose": "Explains the PDU abstraction layer: the evolution from a standalone run_curl function (v0.2) to the PDUManager class (v0.3+). Covers run_curl, pdu_curl/pdu_url, HTTP and SSH protocols, the Digital Loggers REST API endpoints, Digest authentication, CSRF headers, JSON auto-detection, and the module-level instance binding pattern.",
-      "parent": "Core Software Architecture"
+      "purpose": "Document 0.5 PDUManager: run_curl timeouts, pdu_url HTTP/SSH construction using cqr_env.PDU, outlet argument vs default, Digest auth, CSRF headers, JSON auto-detect, pdu_ok(), and TLS insecure (-k) controlled by PDU_TLS_INSECURE.",
+      "parent": "Core Software Architecture (v0.5)"
     },
     {
       "title": "Pump Timer (cqr_sec.py)",
-      "purpose": "Documents the countdown timer subprocess: the simple_timer function, how it is spawned as a non-blocking Popen child process, the countdown loop with 5-second interval logging, and the final PDU outlet OFF when the timer expires.",
-      "parent": "Core Software Architecture"
+      "purpose": "Document 0.5 cqr_sec.py: countdown logging, protocol validation (http/ssh), pdu_url FALSE with pdu_ok verification, raises on failure, and default_timer_count() from PUMP_ON_DURATION_SEC.",
+      "parent": "Core Software Architecture (v0.5)"
+    },
+    {
+      "title": "Test Suite (0.5/tests)",
+      "purpose": "Document the pytest suite under 0.5/tests/: mocked GPIO/PDU fixtures in conftest.py, coverage for env dataclass, PDU timeouts/pdu_ok/TLS flag, edge-triggered get loop, timer OFF/failure paths, and how to run via requirements-dev.txt / pytest.ini.",
+      "parent": "Core Software Architecture (v0.5)"
     },
     {
       "title": "GPIO & Sensor Integration",
-      "purpose": "Overview of how the Raspberry Pi GPIO interface is used to read the CQRobot water sensor, linking to child pages for the original C implementation and the Python port. Note known false-positive readings from clinging water droplets and the hydrophobic coating workaround."
+      "purpose": "Overview of Raspberry Pi GPIO use for the CQRobot sensor (BCM pin from GPIO_PIN, default 18), historical 0.0 C/Python ports, droplet false positives, and hydrophobic coating workaround."
     },
     {
       "title": "Original C Implementation (cqrobot.c)",
-      "purpose": "Covers the original WiringPi-based C program in 0.0/: wiringPiSetup, pinMode(1, INPUT), the digitalRead polling loop, and the binary liquid/no-liquid output. Explains why this served as the starting reference for the Python port.",
+      "purpose": "Cover 0.0/ WiringPi C sample: wiringPiSetup, pinMode, digitalRead loop, binary liquid/no-liquid output, and role as reference for the Python port.",
       "parent": "GPIO & Sensor Integration"
     },
     {
       "title": "Python GPIO Port (cqrobot.py)",
-      "purpose": "Covers the RPi.GPIO-based Python translation in 0.0/: BCM pin numbering, GPIO.setup(18, GPIO.IN), the 1 Hz polling loop with time.sleep(1), the try/finally GPIO.cleanup() pattern, and the pin correction from 17 to 18 vs the C original.",
+      "purpose": "Cover 0.0/ RPi.GPIO port: BCM pin 18, polling loop, GPIO.cleanup(), and pin correction vs the C original.",
       "parent": "GPIO & Sensor Integration"
     },
     {
       "title": "Deployment & Operations",
-      "purpose": "Guide for deploying the production code on a Raspberry Pi as a systemd service. Prefer 0.5/ (or 0.4 if still the installed path). Links to child pages for setup steps and runtime monitoring."
+      "purpose": "Guide for deploying 0.5/ on a Raspberry Pi as systemd service pdu-manager: copy tree, edit cqr_env.PDU and timing constants, enable unit, journalctl monitoring, SSH key setup for PDU access."
     },
     {
       "title": "systemd Service Setup",
-      "purpose": "Step-by-step instructions for installing the pdu-manager.service unit file: copying source to /usr/local/src/cqr-pdu, creating the service file under /etc/systemd/system/, enabling and starting the service, and verifying status with systemctl and journalctl.",
+      "purpose": "Step-by-step pdu-manager.service install: copy 0.5 to /usr/local/src/cqr-pdu, unit file under /etc/systemd/system/, enable/start, verify with systemctl and journalctl.",
       "parent": "Deployment & Operations"
     },
     {
       "title": "Runtime Configuration & Tuning",
-      "purpose": "Explains how to adjust cqr_env.py constants for a specific deployment: changing PDU IP/credentials in PDUS_SMARTLY, tuning TIME_CHECKED polling intervals, toggling BOOL_OUTPUTS verbosity, and understanding PUMP_FEATURE/TANK_FEATURE seed values. Also covers SSH public-key setup for Digital Loggers PDU access.",
+      "purpose": "How to tune 0.5 cqr_env.py for a site: PDU host/credentials/outlet/protocol, POLL_INTERVAL_SEC and PUMP_ON_DURATION_SEC, BOOL_OUTPUTS, PDU_COMMAND_TIMEOUT_SEC, PDU_TLS_INSECURE, and Digital Loggers SSH public-key setup.",
       "parent": "Deployment & Operations"
     },
     {
       "title": "Glossary",
-      "purpose": "Definition of any codebase-specific terms, hardware abbreviations, API concepts, and domain vocabulary used throughout the project. Each entry includes code pointers to relevant files and line references."
+      "purpose": "Define project terms and abbreviations (CQRobot, PDU, PduConfig, pdu_ok, edge-triggered ON, systemd pdu-manager, etc.) with pointers into 0.5 source where useful."
     }
   ]
 }

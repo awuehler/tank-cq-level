@@ -1,165 +1,178 @@
 '''
 Descriptions
-    Python class with methods to support both HTTP and SSH based commands.
+    PDUManager issues HTTP or SSH commands to a Digital Loggers smart PDU.
 
-    Auto-detects JSON responses and returns them as dicts for additional use.
-    
-    Parameters:
-        command (list): The curl or ssh arguments as a list.
+    Auto-detects JSON responses and returns them as dicts when possible.
 
 Notes
     Reference: https://www.digital-loggers.com/restapi.pdf
-        Example: outlet ON
-            curl -s -k -X PUT -H "X-CSRF: x" -H "Accept: application/json" --data "value=true" --digest "https://<USER>:<PASS>@<IP>/restapi/relay/outlets/=7/state/"
-        Example: outlet OFF
-            curl -s -k -X PUT -H "X-CSRF: x" -H "Accept: application/json" --data "value=false" --digest "https://<USER>:<PASS>@<IP>/restapi/relay/outlets/=7/state/"
-        Example: outlet STATE
-            curl -s -k -H "Accept: application/json" --digest "https://<USER>:<PASS>@<IP>/restapi/relay/outlets/=7/state/"
-        Example: document reference
-            curl -s -k -H "Accept: application/json" --digest "https://<USER>:<PASS>@<IP>/restapi/relay/outlets/=<0-7>/state/"
-        Example: key-values
-            curl -k --digest -u <USER>:<PASS> -H "Accept: application/json" --digest 'http://<IP>/restapi/relay/outlets/0/=name,physical_state/'
-        Example: authentication
-            curl -s -k --digest --user <USER>:<PASS> -X PUT -H "X-CSRF: x" --data "value=true" 'http://<IP>/restapi/relay/outlets/7/state/'
 
-    # PDU session token.
-        PDU_TARGET = f"https://{cqr_env.PDUS_SMARTLY[1]}/api/login"
-        PDU_DIGEST = f"username={cqr_env.PDUS_SMARTLY[2]}&password={cqr_env.PDUS_SMARTLY[3]}"
-        PDU_TOKENS = cqr_pdu.run_curl(["curl", "-s", "-k", "-X POST", "-H 'Accept: application/json'", "-H 'Content-Type: application/x-www-form-urlencoded'", "-d" f"{PDU_DIGEST}", f"{PDU_TARGET}"])
-        print( f"PDU Session State: {PDU_TOKENS}" 
+    Example outlet ON (HTTP digest auth):
+        curl -s -k -X PUT -H "X-CSRF: x" --data "value=true" --digest
+        --user "<USER>:<PASS>"
+        "https://<IP>/restapi/relay/outlets/<N>/state/"
+
+    Example outlet OFF:
+        ... --data "value=false" ...
+
+    Example outlet STATE (name + physical_state):
+        curl -s -k -H "Accept: application/json" --digest --user "<USER>:<PASS>"
+        "https://<IP>/restapi/relay/outlets/<N>/=name,physical_state/"
+
+    TLS:
+        curl -k is controlled by cqr_env.PDU_TLS_INSECURE. Local PDUs often use
+        self-signed certificates; leave insecure skip-verify enabled until a
+        device certificate (or local CA) is pinned, then set PDU_TLS_INSECURE
+        to False.
 
 Dependencies
-    1. URL construction is vendor specific.
-    2. Initial PDU hardware is "Pro Switch" sold by Digital Loggers, Inc.
-    3. Key feature is remote outlet ON/OFF cycling via SSH or HTTP/S.
-    4. ...
-
-Improvements
-    - Support +2 Smart PDU vendors
-    - ...
+    1. URL construction is vendor specific (Digital Loggers Pro Switch first).
+    2. Remote outlet ON/OFF via HTTP/S or SSH+local curl on the PDU.
 '''
 
 # ----------------------------------------------------------------------
 # Module(s).
 # ----------------------------------------------------------------------
-import json, logging, subprocess
+import json
+import logging
+import subprocess
 
 # ----------------------------------------------------------------------
 # Import environment, data, and/or custom methods.
 # ----------------------------------------------------------------------
 import cqr_env
 
-# Configure journal logging replacing print statements for state changes.
 logger = logging.getLogger(__name__)
 
-# Define a PDU class.
+
+def pdu_ok(result) -> bool:
+    """Return True when a PDU call did not report a command/timeout error."""
+    if result is None:
+        return False
+    if isinstance(result, dict) and "error" in result:
+        return False
+    return True
+
+
 class PDUManager:
 
-    # Basic CLI subprocess support.
-    def run_curl(self, command: list):
+    def run_curl(self, command: list, timeout: float | None = None):
+        """Run curl/ssh with a hard timeout so a hung PDU cannot block forever."""
+        if timeout is None:
+            timeout = float(cqr_env.PDU_COMMAND_TIMEOUT_SEC)
         try:
             result = subprocess.run(
                 command,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                timeout=timeout,
             )
             output = result.stdout.strip()
-            
-            # Try auto-detect JSON.
             try:
                 return json.loads(output)
             except json.JSONDecodeError:
                 return output
 
-        # Report any command line problem.
+        except subprocess.TimeoutExpired as e:
+            logger.error(f"Command timed out after {timeout}s: {command[0]}")
+            return {"error": "Command timed out", "timeout": timeout, "stderr": e.stderr}
+
         except subprocess.CalledProcessError as e:
             logger.error(f"Command failed with exit code {e.returncode}. Stderr: {e.stderr}")
             return {"error": "Command failed", "stderr": e.stderr}
 
-    # Vendor specific PDU API calls.
+
     def pdu_curl(self, vendor: str, outlet: str, action: str):
         '''
-        Legacy wrapper: Executes an HTTP curl command for PDU based on vendor, outlet, and action.
+        Legacy wrapper: HTTP curl for PDU based on vendor, outlet, and action.
 
         TODO: Use vendor parameter to support additional smart PDU APIs.
-        TODO: Update cqr_env to support 2nd or additional PDU models.
         '''
-        # Passes execution to the unified URL method.
         return self.pdu_url(protocol="http", outlet=outlet, action=action)
 
-    # Vendor specific PDU API calls.
-    def pdu_url(self, protocol: str, outlet: str, action: str):
+
+    def pdu_url(self, protocol: str, outlet: str | None = None, action: str = "get"):
         '''
-        Executes a curl command for PDU based on protocol, outlet, and action.
-        
+        Execute a curl (or SSH-wrapped curl) command for the configured PDU.
+
         Args:
-            protocol (str): HTTP or SSH.
-            outlet (str): The specific outlet identifier.
-            action (str): 'true', 'false', or 'get'.
+            protocol: "http" or "ssh".
+            outlet: Outlet id; defaults to cqr_env.PDU.outlet when omitted/empty.
+            action: "true", "false", or "get".
         '''
         action = action.lower()
         if action not in ["true", "false", "get"]:
             raise ValueError("Invalid action. Must be 'true', 'false', or 'get'...")
 
-        # Extract common environment variables once.
-        pdu_ip     = cqr_env.PDUS_SMARTLY[1]
-        pdu_user   = cqr_env.PDUS_SMARTLY[2]
-        pdu_pass   = cqr_env.PDUS_SMARTLY[3]
-        pdu_outlet = cqr_env.PDUS_SMARTLY[4]
+        pdu = cqr_env.PDU
+        pdu_ip = pdu.host
+        pdu_user = pdu.user
+        pdu_pass = pdu.password
+        pdu_outlet = outlet if outlet not in (None, "") else pdu.outlet
         pdu_digest = f"{pdu_user}:{pdu_pass}"
+        tls_insecure = bool(cqr_env.PDU_TLS_INSECURE)
+        # -k skips certificate verification for self-signed PDU certs when enabled.
+        tls_args = ["-k"] if tls_insecure else []
 
-        # Define HTTP Method, Path, and Data Payloads.
         if action in ["true", "false"]:
             http_method = "PUT"
             target_path = f"/restapi/relay/outlets/{pdu_outlet}/state/"
             action_data = f"value={action}"
-            headers = ['-H', 'X-CSRF: x']
-        else:  # action == "get"
+            headers = ["-H", "X-CSRF: x"]
+        else:
             http_method = "GET"
             target_path = f"/restapi/relay/outlets/{pdu_outlet}/=name,physical_state/"
             action_data = ""
-            headers = ['-H', 'Accept: application/json', '-H', 'X-CSRF: x']
+            headers = ["-H", "Accept: application/json", "-H", "X-CSRF: x"]
 
-        # Build the subprocess arguments.
+        # Bound curl's own transfer time in addition to subprocess timeout.
+        max_time = ["--max-time", str(int(cqr_env.PDU_COMMAND_TIMEOUT_SEC))]
+
         if protocol.lower() == "http":
             target_url = f"https://{pdu_ip}{target_path}"
-            args = [
-                'curl', '--silent', '-k',
-                '--digest', '--user', pdu_digest,
-                '-X', http_method
-            ] + headers
-            
+            args = (
+                ["curl", "--silent"]
+                + tls_args
+                + max_time
+                + ["--digest", "--user", pdu_digest, "-X", http_method]
+                + headers
+            )
             if action_data:
-                args.extend(['--data', action_data])
-            
+                args.extend(["--data", action_data])
             args.append(target_url)
 
         elif protocol.lower() == "ssh":
-            # NOTE: Requires Public key installed on smart PDU.
+            # Requires a public key installed on the smart PDU.
             target_url = f"https://localhost{target_path}"
             pdu_public = f"{pdu_user}@{pdu_ip}"
-            
-            # Remote SSH command execution requires formatting the curl command as a single string.
-            header_str = " ".join([f"{headers[i]} '{headers[i+1]}'" for i in range(0, len(headers), 2)])
-            data_str   = f"--data {action_data}" if action_data else ""
-            
-            remote_curl = f"curl -s -k --digest -u {pdu_digest} -X {http_method} {header_str} {data_str} {target_url}".strip()
-            
+            remote_tls = "-k " if tls_insecure else ""
+            header_str = " ".join(
+                f"{headers[i]} '{headers[i + 1]}'" for i in range(0, len(headers), 2)
+            )
+            data_str = f"--data {action_data}" if action_data else ""
+            remote_curl = (
+                f"curl -s {remote_tls}--max-time {int(cqr_env.PDU_COMMAND_TIMEOUT_SEC)} "
+                f"--digest -u {pdu_digest} -X {http_method} {header_str} {data_str} "
+                f"{target_url}"
+            ).strip()
             args = [
-                'ssh', '-o', 'StrictHostKeyChecking=accept-new',
-                pdu_public, remote_curl
+                "ssh",
+                "-o",
+                "StrictHostKeyChecking=accept-new",
+                "-o",
+                f"ConnectTimeout={int(cqr_env.PDU_COMMAND_TIMEOUT_SEC)}",
+                pdu_public,
+                remote_curl,
             ]
         else:
             raise ValueError("Invalid protocol. Must be 'HTTP' or 'SSH'...")
 
-        # Execute via central method.
         return self.run_curl(args)
 
-# Create a hidden instance of the PDU class.
+
 _pdu_instance = PDUManager()
 
-# Bind each instance method to a module-level variable.
 run_curl = _pdu_instance.run_curl
 pdu_curl = _pdu_instance.pdu_curl
 pdu_url  = _pdu_instance.pdu_url

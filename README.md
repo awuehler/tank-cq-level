@@ -1,23 +1,23 @@
 ## Statement Of Work [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/awuehler/tank-cq-level)
 
-The primary goal for this project is to build a low cost solution to monitor a stand-alone AC chiller with an isolated condensation tank (i.e. no drain access). Thus the water collection tank requires manual dumping every 24 to 48 hours depending on seasonal temperature or humidity.
+The primary goal for this project is to build a low-cost solution to monitor a stand-alone AC chiller with an isolated condensation tank (i.e. no drain access). Thus, the water collection tank requires manual dumping every 24 to 48 hours depending on seasonal temperature or humidity.
 
-Automating a water purge from the AC catch basin is based on an optical sensor used to identify water level height. When a full tank is detected, that event is used to send a signal to a smart PDU. The PDU outlet controlling the water pump is turned ON/OFF triggered by the optical sensor event.
+Automating a water purge from the AC catch basin is based on an optical sensor used to identify water level height. When a full tank is detected, that event is used to send a signal to a smart PDU. The PDU outlet controlling the water pump is turned ON/OFF, triggered by the optical sensor event.
 
 This feedback loop depends on several factors:
 
   - WiFi access from the RPi Zero W to the smart PDU
-  - Smart PDU network access to enable remote API call
-  - Custom script (Bash, Python, ...) to monitor GPIO pin signal
+  - Smart PDU network access to enable remote API calls
+  - Custom script (Bash, Python, ...) to monitor the GPIO pin signal
 
-The end to end summary is to purge the water from a catch basin (i.e. AC condensation tank) as it fills up using a small controller (Raspberry Pi) and a sensor (CQRobot optical) to turn ON and turn OFF a pump without the need for daily or weekly human assistance.
+The end-to-end summary is to purge water from a catch basin (i.e. AC condensation tank) as it fills, using a small controller (Raspberry Pi) and a sensor (CQRobot optical) to turn a pump ON and OFF without the need for daily or weekly human assistance.
 
 ## Hardware Inventory Required
 
 - Raspberry Pi Zero W with GPIO header (or equivalent)
   - Pi Zero Case Kit Compatible Pin Header
   - Micro USB Cable Power Supply 5.25 Volts 3 Amps for Raspberry Pi Zero Board
-  - Additional attachments (as needed) for USB, and/or HDMI devices
+  - Additional attachments (as needed) for USB and/or HDMI devices
   - Approximate cost: $40 US (varies)
 
 - CQRobot Contact Water/Liquid Level Sensor (or equivalent)
@@ -30,28 +30,28 @@ The end to end summary is to purge the water from a catch basin (i.e. AC condens
 
 - ECO-WORTHY RV Fresh Water Pump 12V DC 3.5GPM 45PSI Self Priming (or equivalent)
   - 12V 5A 60W LED Power Supply, AC 100-240V to DC 12 Volt Transformer, Power Adapter
-    - available through amazon, ebay, or related online retailers
+    - available through Amazon, eBay, or related online retailers
   - Approximate cost: $60 US (varies)
 
-- Digital Web Loggers Smart PDU (or equivalent)
+- Digital Loggers Smart PDU (or equivalent)
   - Must support remote outlet ON/OFF cycling via SSH or HTTP/S
     - See: https://www.digital-loggers.com/restapi.pdf
   - Approximate cost: $300 US (varies)
 
-- Additional items include: tubing, one-way inline check valve, water proofing materials, ...
+- Additional items include: tubing, one-way inline check valve, waterproofing materials, ...
   - Approximate cost: $50 US (varies)
 
 ## Version: 0.5
 
-Under development... refactor, & add features.
+Current development line: `PduConfig` dataclass, edge-triggered pump control, PDU command timeouts, ON/OFF result checks (`pdu_ok`), lazy GPIO setup, and a pytest suite under `0.5/tests/`.
 
 ## Version: 0.4
 
-Clean up, test, add comments, and make ready for initial deployment of end-2-end solution with pump hardware attached to AC chiller.
+Clean up, test, add comments, and make ready for initial deployment of an end-to-end solution with pump hardware attached to the AC chiller.
 
 ## Version: 0.3
 
-Define a PDU Manager class for future improvements in support of additional smart PDU vendors; refine logging for clear reporting of water level e.g.
+Define a PDU Manager class for future improvements in support of additional smart PDU vendors; refine logging for clear reporting of water level, e.g.
 
 ```
   2026-05-17 16:39:59.139908  CQRobot: 0 (H2O level below sensor)  DWL: ['AC Chill #3', False] (outlet power state)
@@ -73,11 +73,11 @@ Define a PDU Manager class for future improvements in support of additional smar
 
 ## Version: 0.2
 
-Refactor functional coding areas into sparate files for environment, timer, pdu, and main.
+Refactor functional coding areas into separate files for environment, timer, PDU, and main.
 
 ## Version: 0.1
 
-Proof of concept to report each state change whenever the optical sensor detects water. Confirmed angle of operation limitation due to drip of water clinging to it whenever the sensor is placed off angle to water surface (results in false positive reading until the droplet is removed). Operational work-around is the need to apply a protective hydrophobic coating to remedy i.e. prevent.
+Proof of concept to report each state change whenever the optical sensor detects water. Confirmed an angle-of-operation limitation due to water dripping and clinging to the sensor whenever it is placed off-angle to the water surface (results in a false positive reading until the droplet is removed). The operational workaround is to apply a protective hydrophobic coating to prevent clinging droplets.
 
 ## Version: 0.0
 
@@ -97,7 +97,7 @@ The resulting output in Python was mostly correct, except for using the wrong GP
 
 ### Step 0
 
-  Install git package; download and install WiringPi package (v3.18 pre-compiled release currently):
+  Install the git package; download and install the WiringPi package (v3.18 pre-compiled release currently):
 
     - e.g. sudo apt install git
     - e.g. wget https://github.com/WiringPi/WiringPi/releases/download/3.18/wiringpi_3.18_armhf.deb
@@ -106,7 +106,7 @@ The resulting output in Python was mostly correct, except for using the wrong GP
 
   Test GPIO communication:
 
-    -e.g. gpio readall
+    - e.g. gpio readall
 
 ```
   pi@rpi-pump-01:~ $ gpio readall
@@ -147,11 +147,11 @@ The resulting output in Python was mostly correct, except for using the wrong GP
 
 ### Step 2
 
-  Place a copy of the current version of source code under /usr/local/src/cqr-pdu:
+  Place a copy of the current version of the source code under /usr/local/src/cqr-pdu:
 
-    - e.g. sudo cp -rfp /home/pi/github/tank-cq-level/0.4 /usr/local/src/cqr-pdu
+    - e.g. sudo cp -rfp /home/pi/github/tank-cq-level/0.5 /usr/local/src/cqr-pdu
 
-  > NOTE: Update /usr/local/src/cqr-pdu/cqr_env.py file to include the PDU IP address, user credential, outlet, and choice of protocol
+  > NOTE: Update `/usr/local/src/cqr-pdu/cqr_env.py` — set `PDU` (`PduConfig`: host, user, password, outlet, protocol) and tune `POLL_INTERVAL_SEC` / `PUMP_ON_DURATION_SEC` as needed.
 
 ### Step 3
 
@@ -210,11 +210,11 @@ The resulting output in Python was mostly correct, except for using the wrong GP
 
 Additional information inserted as needed.
 
-The option to use the SSH protocol for remote command access (vs. curl) requires the creation of a public key (e.g. ssh-keygen -t ed25519 -C "pi@rpi-pump-01") to be placed on the remote PDU. Please note, that the SSH_ASKPASS environment variable is not an easy nor reliable alternative to enable password-less ssh access to the remote PDU commandline shell.
+The option to use the SSH protocol for remote command access (vs. curl) requires creating a public key (e.g. `ssh-keygen -t ed25519 -C "pi@rpi-pump-01"`) to be placed on the remote PDU. Please note that the `SSH_ASKPASS` environment variable is not an easy or reliable alternative for passwordless SSH access to the remote PDU command-line shell.
 
-  - For the Digital Web Logger PDU:
-    - login -> admin -> Setup -> General Network Settings -> Allowed SSH public keys
-  - Follow-up detail for Digital Web Logger PDU:
+  - For the Digital Loggers PDU:
+    - login → admin → Setup → General Network Settings → Allowed SSH public keys
+  - Follow-up detail for the Digital Loggers PDU:
     - remote API control is only available through its admin account
 
 ...
